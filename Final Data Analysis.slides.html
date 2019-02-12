@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
 
-<title>Final Data Analysis-Copy1 slides</title>
+<title>Final Data Analysis slides</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
@@ -13242,6 +13242,201 @@ a.anchor-link {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="What-influences-home-value-more-weather-or-location?">What influences home value more weather or location?<a class="anchor-link" href="#What-influences-home-value-more-weather-or-location?">&#182;</a></h1>
+</div>
+</div>
+</div></section></section><section><section>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Data-Collection-Plan---Census-Data">Data Collection Plan - Census Data<a class="anchor-link" href="#Data-Collection-Plan---Census-Data">&#182;</a></h2><ul>
+<li>First I collected census data for median income and median home value for every county in the US</li>
+<li><p>Then I edited the census CVS's in Excel to get rid of unnessecary rows and ID columns. I also added columns to break out county name and state into 2 columns.</p>
+</li>
+<li><p>I then imported all of the data from the census to combine all of the housing and income data into one data set, this was then exported a CSV in to the Input Files folder as Income and Housing Data.</p>
+</li>
+</ul>
+<ul>
+<li>I also exported a CSV that just included state and county information to the Interim Files Folder to use with the Google geolocation API.</li>
+</ul>
+
+</div>
+</div>
+</div><div class="fragment">
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># refine housing and income data by selecting relevant columns and renaming columns</span>
+
+<span class="n">median_income</span> <span class="o">=</span> <span class="n">median_income</span><span class="p">[[</span><span class="s2">&quot;Geography&quot;</span><span class="p">,</span><span class="s2">&quot;County&quot;</span><span class="p">,</span><span class="s2">&quot;state&quot;</span><span class="p">,</span><span class="s2">&quot;Mean income (dollars); Estimate; All households&quot;</span><span class="p">]]</span>
+<span class="n">median_income</span> <span class="o">=</span> <span class="n">median_income</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;state&quot;</span><span class="p">:</span><span class="s2">&quot;State&quot;</span><span class="p">,</span><span class="s2">&quot;Mean income (dollars); Estimate; All households&quot;</span><span class="p">:</span><span class="s2">&quot;Median Income&quot;</span><span class="p">})</span>
+
+<span class="n">median_home_value_acs</span> <span class="o">=</span> <span class="n">median_home_value_acs</span><span class="p">[[</span><span class="s2">&quot;Geography&quot;</span><span class="p">,</span><span class="s2">&quot;Estimate; Median value (dollars)&quot;</span><span class="p">]]</span>
+<span class="n">median_home_value_acs</span> <span class="o">=</span> <span class="n">median_home_value_acs</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Estimate; Median value (dollars)&quot;</span><span class="p">:</span><span class="s2">&quot;ACS Home Value&quot;</span><span class="p">})</span>
+
+<span class="n">zillow_home_value</span> <span class="o">=</span> <span class="n">zillow_home_value</span><span class="p">[[</span><span class="s2">&quot;geography&quot;</span><span class="p">,</span><span class="s2">&quot;Zhvi&quot;</span><span class="p">]]</span>
+<span class="n">zillow_home_value</span> <span class="o">=</span> <span class="n">zillow_home_value</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;geography&quot;</span><span class="p">:</span><span class="s2">&quot;Geography&quot;</span><span class="p">,</span><span class="s2">&quot;Zhvi&quot;</span><span class="p">:</span><span class="s2">&quot;Zillow Home Value&quot;</span><span class="p">})</span>
+
+<span class="n">zillow_bottom_tier</span> <span class="o">=</span> <span class="n">zillow_bottom_tier</span><span class="p">[[</span><span class="s2">&quot;Geography&quot;</span><span class="p">,</span><span class="s2">&quot;2018-12&quot;</span><span class="p">]]</span>
+<span class="n">zillow_bottom_tier</span> <span class="o">=</span> <span class="n">zillow_bottom_tier</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;2018-12&quot;</span><span class="p">:</span><span class="s2">&quot;Zillow Bottom Tier Home Value&quot;</span><span class="p">})</span>
+
+<span class="n">zillow_top_tier</span> <span class="o">=</span> <span class="n">zillow_top_tier</span><span class="p">[[</span><span class="s2">&quot;Geography&quot;</span><span class="p">,</span><span class="s2">&quot;2018-12&quot;</span><span class="p">]]</span>
+<span class="n">zillow_top_tier</span> <span class="o">=</span> <span class="n">zillow_top_tier</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;2018-12&quot;</span><span class="p">:</span><span class="s2">&quot;Zillow Top Tier Home Value&quot;</span><span class="p">})</span>
+
+<span class="c1"># create a csv for the county and state data</span>
+
+<span class="n">output_data</span> <span class="o">=</span> <span class="n">median_income</span><span class="p">[[</span><span class="s2">&quot;Geography&quot;</span><span class="p">,</span><span class="s2">&quot;County&quot;</span><span class="p">,</span><span class="s2">&quot;State&quot;</span><span class="p">]]</span>
+
+<span class="n">output_data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">&quot;./Interim Data Files/State and County Info.csv&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div></div></section></section><section><section>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Data-Collection-Plan---Google-API-for-Lat-and-Long">Data Collection Plan - Google API for Lat and Long<a class="anchor-link" href="#Data-Collection-Plan---Google-API-for-Lat-and-Long">&#182;</a></h2><ul>
+<li>I then imported the state and county data into the Get Lat and Lng for Counties jupyter notebook and made calls to the Google geocode API to collect latitude and longitude data. I exported a CSV to Interim Data Files to use with the weather data API.</li>
+</ul>
+
+</div>
+</div>
+</div><div class="fragment">
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">config</span> <span class="k">import</span> <span class="n">gkey</span>
+
+<span class="n">locations</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;Interim Data Files/State and County Info.csv&quot;</span><span class="p">)</span>
+
+<span class="n">locations</span><span class="p">[</span><span class="s1">&#39;Latitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<span class="n">locations</span><span class="p">[</span><span class="s1">&#39;Longitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+<span class="c1"># Build URL using the Google MAps API</span>
+
+<span class="n">base_url</span> <span class="o">=</span> <span class="s2">&quot;https://maps.googleapis.com/maps/api/geocode/json?&quot;</span>
+
+<span class="n">location</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+
+<span class="n">params</span><span class="o">=</span><span class="p">{</span>
+    <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="n">gkey</span>
+<span class="p">}</span>
+
+<span class="c1"># iterate through datafram and retrieve lat and lng info</span>
+
+<span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">locations</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+
+    <span class="n">location</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;Geography&#39;</span><span class="p">]</span>
+    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;address&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">location</span>
+
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">base_url</span><span class="p">,</span><span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+    
+    <span class="c1"># extract results</span>
+    
+    <span class="n">results</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">]</span>
+    
+    <span class="k">try</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Retrieving Results for Index </span><span class="si">{index}</span><span class="s2">: </span><span class="si">{location}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        
+        <span class="n">locations</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="s1">&#39;Latitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;geometry&#39;</span><span class="p">][</span><span class="s1">&#39;location&#39;</span><span class="p">][</span><span class="s1">&#39;lat&#39;</span><span class="p">]</span>
+        <span class="n">locations</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="s1">&#39;Longitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;geometry&#39;</span><span class="p">][</span><span class="s1">&#39;location&#39;</span><span class="p">][</span><span class="s1">&#39;lng&#39;</span><span class="p">]</span>
+        
+    <span class="k">except</span> <span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">IndexError</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Missing field/result... skipping.&quot;</span><span class="p">)</span>
+        
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;------------&quot;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div></div></section></section><section><section>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Data-Collection-Plan---aWhere-API">Data Collection Plan - aWhere API<a class="anchor-link" href="#Data-Collection-Plan---aWhere-API">&#182;</a></h2><ul>
+<li>I then used the state and county daya with latitude and longitude to make API calls to aWhere's Historical Norms API to collect weather data for each county. I exported a CSV to Input Data to use in my final analysis.</li>
+</ul>
+
+</div>
+</div>
+</div><div class="fragment">
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">locations</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;Interim Data Files/State and County Info with Lat and Lng.csv&quot;</span><span class="p">)</span>
+
+<span class="n">locations</span><span class="p">[</span><span class="s1">&#39;Avg Temperature&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<span class="n">locations</span><span class="p">[</span><span class="s1">&#39;Max Temperature&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<span class="n">locations</span><span class="p">[</span><span class="s1">&#39;Min Temperature&#39;</span><span class="p">]</span> <span class="o">=</span>  <span class="s2">&quot;&quot;</span>
+<span class="n">locations</span><span class="p">[</span><span class="s1">&#39;Avg Percipitation&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<span class="n">locations</span><span class="p">[</span><span class="s1">&#39;Min Humidity&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<span class="n">locations</span><span class="p">[</span><span class="s1">&#39;Max Humidity&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<span class="n">locations</span><span class="p">[</span><span class="s1">&#39;Avg Wind&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+<span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://api.awhere.com/v2/weather/locations&quot;</span>
+
+<span class="n">lat</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<span class="n">lng</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+<span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Authorization&quot;</span><span class="p">:</span> <span class="s2">&quot;Bearer &quot;</span> <span class="o">+</span> <span class="n">access_token</span><span class="p">}</span>
+
+<span class="c1">#loop through rows, make API calls and store data</span>
+
+<span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">locations</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+    <span class="n">lat</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;Latitude&#39;</span><span class="p">]</span>
+    <span class="n">lng</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;Longitude&#39;</span><span class="p">]</span>
+
+    <span class="n">query_url</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{url}</span><span class="s2">/</span><span class="si">{lat}</span><span class="s2">,</span><span class="si">{lng}</span><span class="s2">/norms/01-01/years/2015,2018/?&amp;units=usa&quot;</span>
+    
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">query_url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+    <span class="n">response_json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+    
+    <span class="k">try</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Retrieving Results for Index </span><span class="si">{index}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="n">locations</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="s1">&#39;Avg Temperature&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">response_json</span><span class="p">[</span><span class="s1">&#39;meanTemp&#39;</span><span class="p">][</span><span class="s1">&#39;average&#39;</span><span class="p">]</span>
+        <span class="n">locations</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="s1">&#39;Max Temperature&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">response_json</span><span class="p">[</span><span class="s1">&#39;maxTemp&#39;</span><span class="p">][</span><span class="s1">&#39;average&#39;</span><span class="p">]</span>
+        <span class="n">locations</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="s1">&#39;Min Temperature&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">response_json</span><span class="p">[</span><span class="s1">&#39;minTemp&#39;</span><span class="p">][</span><span class="s1">&#39;average&#39;</span><span class="p">]</span>
+        <span class="n">locations</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="s1">&#39;Avg Percipitation&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">response_json</span><span class="p">[</span><span class="s1">&#39;precipitation&#39;</span><span class="p">][</span><span class="s1">&#39;average&#39;</span><span class="p">]</span>
+        <span class="n">locations</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="s1">&#39;Min Humidity&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">response_json</span><span class="p">[</span><span class="s1">&#39;minHumidity&#39;</span><span class="p">][</span><span class="s1">&#39;average&#39;</span><span class="p">]</span>
+        <span class="n">locations</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="s1">&#39;Max Humidity&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">response_json</span><span class="p">[</span><span class="s1">&#39;maxHumidity&#39;</span><span class="p">][</span><span class="s1">&#39;average&#39;</span><span class="p">]</span>
+        <span class="n">locations</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="s1">&#39;Avg Wind&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">response_json</span><span class="p">[</span><span class="s1">&#39;averageWind&#39;</span><span class="p">][</span><span class="s1">&#39;average&#39;</span><span class="p">]</span>
+        
+    <span class="k">except</span> <span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">IndexError</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Missing field/result... skipping.&quot;</span><span class="p">)</span>
+        
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;------------&quot;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div></div></section></section><section><section>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Data-Analysis">Data Analysis<a class="anchor-link" href="#Data-Analysis">&#182;</a></h2><ul>
+<li>I then imported the Income and Housing Data CSV and the Weather Data CSV to the Final Data Cleanup and Plot Generation jupyter notebook. I then merged the data into one data set and generated various graphs to communicate the trends observed in the data. I also exported a CSV and all of my plots to the Output Files Folder.</li>
+</ul>
+
+</div>
+</div>
+</div></section></section><section><section>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
 <h1 id="What-influences-home-value?">What influences home value?<a class="anchor-link" href="#What-influences-home-value?">&#182;</a></h1>
 </div>
 </div>
@@ -13252,7 +13447,7 @@ a.anchor-link {
 <h2 id="Question-1---Is-there-a-correlation-between-weather-and-housing-prices?">Question 1 - Is there a correlation between weather and housing prices?<a class="anchor-link" href="#Question-1---Is-there-a-correlation-between-weather-and-housing-prices?">&#182;</a></h2>
 </div>
 </div>
-</div></section><section>
+</div></section></section><section><section>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
 <div class="prompt input_prompt">In&nbsp;[13]:</div>
@@ -13288,7 +13483,7 @@ a.anchor-link {
 </div>
 </div>
 
-</div></section><section>
+</div></section></section><section><section>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
 <div class="prompt input_prompt">In&nbsp;[14]:</div>
@@ -13323,7 +13518,7 @@ a.anchor-link {
 </div>
 </div>
 
-</div></section><section>
+</div></section></section><section><section>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
 <div class="prompt input_prompt">In&nbsp;[15]:</div>
@@ -13358,7 +13553,7 @@ a.anchor-link {
 </div>
 </div>
 
-</div></section><section>
+</div></section></section><section><section>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
 <div class="prompt input_prompt">In&nbsp;[16]:</div>
@@ -13413,7 +13608,7 @@ a.anchor-link {
 <h2 id="Question-2---Is-there-a-correlation-between-location-and-housing-prices?">Question 2 - Is there a correlation between location and housing prices?<a class="anchor-link" href="#Question-2---Is-there-a-correlation-between-location-and-housing-prices?">&#182;</a></h2>
 </div>
 </div>
-</div></section><section>
+</div></section></section><section><section>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
 <div class="prompt input_prompt">In&nbsp;[17]:</div>
@@ -13448,7 +13643,7 @@ a.anchor-link {
 </div>
 </div>
 
-</div></section><section>
+</div></section></section><section><section>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
 <div class="prompt input_prompt">In&nbsp;[18]:</div>
